@@ -30,7 +30,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="btn_ok" max="32767" attributes="0"/>
-                  <Component id="pb_progress" max="32767" attributes="0"/>
+                  <Component id="pb_progress" pref="180" max="32767" attributes="0"/>
                   <Component id="lbl_text" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>

@@ -8,6 +8,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingWorker;
@@ -40,7 +41,7 @@ public class ScriptDEODEX extends SysUtils {
         
         
         totalFiles = apks.length;
-        one = (1f/(8f*totalFiles))*100f;
+        one = (1f/(9f*totalFiles))*100f;
         
         //Start working
         final SwingWorker work1 = new SwingWorker<String, Integer>(){
@@ -78,7 +79,7 @@ public class ScriptDEODEX extends SysUtils {
             public void windowClosing(WindowEvent e) {
                 if(!finished){
                     work1.cancel(true);
-                    System.out.println("Cancelled pulling.");
+                    System.out.println("Cancelled deodexing.");
                     clean();
                 }
             }
@@ -105,12 +106,11 @@ public class ScriptDEODEX extends SysUtils {
             directoryChange(".."+sep);
             
             progress.Add(one, "Copying required files...");
-            //Copy Smali & Baksmali if they dont exist.
-            if(!(new File("framework"+sep+"smali.jar")).exists() || 
-                    !(new File("framework"+sep+"smali.jar")).exists()){
-                directoryChange("framework"+sep+"..");
-                fileCopy("resources"+sep+"smali.jar","framework"+sep+"smali.jar");
-                fileCopy("resources"+sep+"baksmali.jar","framework"+sep+"baksmali.jar");
+            File smali = new File("framework"+sep+"smali.jar");
+            File baksmali = new File("framework"+sep+"smali.jar");
+            if(!smali.exists() || !baksmali.exists()){
+                fileCopyFromJar("/resources/smali.jar", smali.getPath());
+                fileCopyFromJar("/resources/baksmali.jar", baksmali.getPath() );
                 
             }
             if(ext.equals("apk")){
@@ -119,12 +119,10 @@ public class ScriptDEODEX extends SysUtils {
             }
             
             progress.Add(one, "Disassembling...");
-            //Dissasemble
-            execute("cd framework && java -Xmx512m -jar baksmali.jar -x " + apk + ".odex -a" + api);
-            progress.Add(one, "Assembling...");
-            //Assemble
-            execute("cd framework && java -Xmx512M -jar smali.jar out"+sep+" -o classes.dex");
+            execute("framework", Arrays.asList("java", "-Xmx512m","-jar", "baksmali.jar","-x", apk + ".odex",  "-a" + api));
             
+            progress.Add(one, "Assembling...");
+            execute("framework", Arrays.asList("java", "-Xmx512m","-jar", "smali.jar","out"+sep, "-o", "classes.dex"));
             
             progress.Add(one, "Creating directories...");
             directoryChange("deodexed");
@@ -149,14 +147,25 @@ public class ScriptDEODEX extends SysUtils {
             directoryZip(".."+sep+"deodexed"+sep+apk + "." + ext, ".", compression);
             //Delete all temp files
             directoryChange(".."+sep+"framework");
+            
+            progress.Add(one, "Cleaning...");
             clean(apk);
             echo(apk + " deodexed.");
-            
             directoryChange(".."+sep);
-            progress.Add(one, "Done: " + apk + " deodexed.");
+            
+            if(apks.length>1){
+                progress.Add(one, "<html>Done:<br/>All files deodexed.</html>");
+            }
+            else{
+                progress.Add(one, "<html>Done:<br/>" + apk + " deodexed.</html>");
+            }
+            
             
             //Open file exlplorer on the finished product
-            directoryOpen("deodexed");
+            if(apk.equals(apks[apks.length-1])){
+                directoryOpen("deodexed");
+            }
+            
 
         }
     }

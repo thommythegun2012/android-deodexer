@@ -57,17 +57,6 @@ public class SysUtils {
         return e;
     }
     
-    //execute("cls");
-    protected boolean execute(String prog) throws Exception{
-        echo(".exec( cmd /c \""+ prog +  "\"");
-        try{
-            java.lang.Runtime.getRuntime().exec("cmd /c \""+prog+"\"").waitFor();
-        }catch(Exception e){
-            throw new Exception(e);
-        }
-        return true;
-    }
-    
     //execute("C:\Users\", "rm", "-r");
     protected boolean execute(String working_dir, List<String> args) throws Exception{
         echo("execute(" + working_dir + ", "+ args + ")");
@@ -170,6 +159,8 @@ public class SysUtils {
 
     public void directoryZip( String OUTPUT_ZIP_FILE, String SOURCE_FOLDER, int comp ) throws Exception
     {
+        fileList = new ArrayList<>();
+    	System.out.println("directoryZip(" + OUTPUT_ZIP_FILE + ", " + SOURCE_FOLDER + ", " + comp);
         SOURCE_FOLDER = (new File(SOURCE_FOLDER)).getCanonicalPath().toString();
         OUTPUT_ZIP_FILE = (new File(OUTPUT_ZIP_FILE)).getCanonicalPath().toString();
     	generateFileList(new File(SOURCE_FOLDER), SOURCE_FOLDER);
@@ -193,7 +184,6 @@ public class SysUtils {
     	ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
         zos.setLevel(comp);
         
-    	System.out.println("Output to Zip : " + zipFile);
  
     	for(String file : this.fileList){
  

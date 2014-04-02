@@ -153,14 +153,10 @@ public class Main extends javax.swing.JFrame {
         System.out.println("Verifying necessary files...");
         SysUtils Utils = new SysUtils();
         Utils.OSCommands();
-        File smali = new File("resources/smali.jar");
-        File baksmali = new File("resources/baksmali.jar");
         File adp = new File(Utils.adb);
-        if(!smali.exists() || !baksmali.exists() || !adp.exists()){
+        if(!adp.exists()){
             System.out.println("Files missing, unpacking...");
             Utils.directoryMake("resources");
-            Utils.fileCopyFromJar("/resources/smali.jar", smali.getPath());
-            Utils.fileCopyFromJar("/resources/baksmali.jar", baksmali.getPath() );
             Utils.fileCopyFromJar("/"+adp.getPath().replace(File.separator,"/"), adp.getPath() );
             if(Utils.OSCommands()==0){
                 Utils.fileCopyFromJar("/resources/AdbWinApi.dll", "resources/AdbWinApi.dll");

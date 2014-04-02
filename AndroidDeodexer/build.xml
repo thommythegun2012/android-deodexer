@@ -74,5 +74,8 @@
 		<delete>
             <fileset file="${dist.dir}/README.TXT"/>
         </delete>
+		<copy todir="${dist.dir}">
+			<fileset file="${basedir}/ReadMe.txt"/>
+		</copy>
 	</target>
 </project>

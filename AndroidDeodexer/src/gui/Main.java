@@ -17,13 +17,15 @@ import androiddeodexer.ScriptCLEAR;
 import androiddeodexer.SysUtils;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
@@ -32,13 +34,13 @@ import javax.swing.filechooser.FileSystemView;
  *
  * @author Luis Peregrina
  */
-public class Main extends javax.swing.JFrame {
+public class Main extends JFrame {
     LinkedHashMap<String, String> api_levels = new LinkedHashMap<>();
     int debugWidth, debugHeight;
-    Rectangle debugShow = new Rectangle(15, 15, 700, 400);
-    Rectangle debugHide = new Rectangle(15, 15, 393, 400);
+    SysUtils u = new SysUtils();
 
-    
+    final int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+    final int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
     
     private void set_api_levels(){
         api_levels.put("19", "4.4");
@@ -81,13 +83,16 @@ public class Main extends javax.swing.JFrame {
         api_fill();
         
         
+        
         setIconImage(new ImageIcon(getClass().getClassLoader().
                 getResource("resources/icons/main.png")).getImage());
         
-        
-        
+        this.setLocation(screenWidth / 4, screenHeight / 4);
         
         pack();
+        
+        
+        
         setVisible(true);
         
         debugHeight = this.getHeight();
@@ -107,26 +112,16 @@ public class Main extends javax.swing.JFrame {
             }
         });
         
-        try{
-            install();
-            
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+        
         
         
     }
     
     private void toggleDebug(boolean show){
-        this.setResizable(true);
-        if(show){
-            this.setBounds(debugShow);
-        }
-        else{
-            this.setBounds(debugHide);
-        }
-        
-        this.setResizable(false);
+        //txt_debug.setVisible(show);
+        jScrollPane2.setVisible(show);
+        btn_debug_clear.setVisible(show);
+        pack();
     }
     
     
@@ -149,22 +144,7 @@ public class Main extends javax.swing.JFrame {
         }  
     }  
     
-    private void install() throws Exception{
-        System.out.println("Verifying necessary files...");
-        SysUtils Utils = new SysUtils();
-        Utils.OSCommands();
-        File adp = new File(Utils.adb);
-        if(!adp.exists()){
-            System.out.println("Files missing, unpacking...");
-            Utils.directoryMake("resources");
-            Utils.fileCopyFromJar("/"+adp.getPath().replace(File.separator,"/"), adp.getPath() );
-            if(Utils.OSCommands()==0){
-                Utils.fileCopyFromJar("/resources/AdbWinApi.dll", "resources/AdbWinApi.dll");
-                Utils.fileCopyFromJar("/resources/AdbWinUsbApi.dll", "resources/AdbWinUsbApi.dll");
-            }
-        }
-        System.out.println("Done with nessesary files.");
-    }
+    
     
     
     
@@ -267,7 +247,7 @@ public class Main extends javax.swing.JFrame {
         pnl_frameworkLayout.setHorizontalGroup(
             pnl_frameworkLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(btn_pull_framework, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(btn_clear_framework, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+            .addComponent(btn_clear_framework, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         pnl_frameworkLayout.setVerticalGroup(
             pnl_frameworkLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -291,7 +271,7 @@ public class Main extends javax.swing.JFrame {
         pnl_version.setLayout(pnl_versionLayout);
         pnl_versionLayout.setHorizontalGroup(
             pnl_versionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
         );
         pnl_versionLayout.setVerticalGroup(
             pnl_versionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -301,10 +281,13 @@ public class Main extends javax.swing.JFrame {
         );
 
         cb_debug.setText("Debug");
+        cb_debug.setHorizontalTextPosition(SwingConstants.LEFT);
 
+        txt_debug.setEditable(false);
+        txt_debug.setBackground(java.awt.SystemColor.control);
         txt_debug.setColumns(20);
         txt_debug.setRows(5);
-        txt_debug.setEnabled(false);
+        txt_debug.setToolTipText("Debug information.");
         jScrollPane2.setViewportView(txt_debug);
 
         pnl_apks.setBorder(javax.swing.BorderFactory.createTitledBorder("APKs"));
@@ -353,26 +336,24 @@ public class Main extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(btn_exit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(pnl_deodex, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(pnl_apks, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(pnl_framework, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(pnl_apks, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(pnl_framework, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(pnl_deodex, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(pnl_version, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(lbl_compression)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(spn_compression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cb_debug)))))
+                                .addComponent(spn_compression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(cb_debug)
+                            .addComponent(pnl_version, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(btn_exit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
                     .addComponent(btn_debug_clear, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -383,18 +364,19 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(pnl_version, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lbl_compression)
-                            .addComponent(spn_compression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cb_debug)))
+                            .addComponent(spn_compression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cb_debug))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(pnl_deodex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pnl_apks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pnl_framework, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_exit)
@@ -413,7 +395,10 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_exitActionPerformed
 
     private void btn_deodex_apkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deodex_apkActionPerformed
-        File dir = new File("app\\");
+        File dir = new File(u.CWD+"app");
+        try{
+            System.out.println(dir.getCanonicalPath().toString());
+        }catch(Exception e){}
         if(dir.isDirectory()){
             FileSystemView fsv = new DirectoryRestrictedFileSystemView(dir);
             JFileChooser fileChooser = new JFileChooser(fsv);
@@ -444,7 +429,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_deodex_apkActionPerformed
 
     private void btn_deodex_jarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deodex_jarActionPerformed
-        File dir = new File("framework\\");
+        File dir = new File(u.CWD+"framework");
         if(dir.isDirectory()){
             FileSystemView fsv = new DirectoryRestrictedFileSystemView(dir);
             JFileChooser fileChooser = new JFileChooser(fsv);

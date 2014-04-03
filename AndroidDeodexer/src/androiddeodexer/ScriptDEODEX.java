@@ -101,16 +101,14 @@ public class ScriptDEODEX extends SysUtils {
         for(String apk: apks){
 
             progress.Add(0, "Cleaning...");
-            directoryChange("framework");
             clean(apk);
-            directoryChange(".."+sep);
             
             progress.Add(one, "Copying required files...");
             File smali = new File("framework"+sep+"smali.jar");
-            File baksmali = new File("framework"+sep+"smali.jar");
+            File baksmali = new File("framework"+sep+"baksmali.jar");
             if(!smali.exists() || !baksmali.exists()){
-                fileCopyFromJar("/resources/smali.jar", smali.getPath());
-                fileCopyFromJar("/resources/baksmali.jar", baksmali.getPath() );
+                fileCopyFromJar("/resources/smali.jar", smali.getCanonicalPath());
+                fileCopyFromJar("/resources/baksmali.jar", baksmali.getCanonicalPath());
                 
             }
             if(ext.equals("apk")){
@@ -125,33 +123,31 @@ public class ScriptDEODEX extends SysUtils {
             execute("framework", Arrays.asList("java", "-Xmx512m","-jar", "smali.jar","out"+sep, "-o", "classes.dex"));
             
             progress.Add(one, "Creating directories...");
-            directoryChange("deodexed");
-            directoryChange(".."+sep+"buildDEODEX");
+            directoryMake("deodexed");
+            directoryMake("buildDEODEX");
             
             progress.Add(one, "Copying file...");
             //Copy from ..\framework\classes.dex to buildDEODEX\classes.dex
-            fileCopy(".."+sep+"framework"+sep+"classes.dex", "classes.dex");
+            fileCopy("framework"+sep+"classes.dex", "buildDEODEX"+sep+"classes.dex");
             
             progress.Add(one, "Unzipping file...");
             if(ext.equals("apk")){
                 //Unzip ..\apks\SystemUI.apk to buildDEODEX\
-                fileUnzip(".."+sep+"app"+sep + apk + "." + ext, ".");
+                fileUnzip("app"+sep + apk + "." + ext, "buildDEODEX");
             }
             else{
                 //Unzip ..\framework\SystemUI.apk to buildDEODEX\
-                fileUnzip(".."+sep+"framework"+sep + apk + "." + ext, ".");
+                fileUnzip("framework"+sep + apk + "." + ext, "buildDEODEX");
             }
             
             progress.Add(one, "Zipping directory...");
             //Zip all buildDEODEX\ to ..\deodexed\Done.apk
-            directoryZip(".."+sep+"deodexed"+sep+apk + "." + ext, ".", compression);
-            //Delete all temp files
-            directoryChange(".."+sep+"framework");
+            directoryZip("deodexed"+sep+apk + "." + ext, "buildDEODEX", compression);
             
+            //Delete all temp files
             progress.Add(one, "Cleaning...");
             clean(apk);
             echo(apk + " deodexed.");
-            directoryChange(".."+sep);
             
             if(apks.length>1){
                 progress.Add(one, "<html>Done:<br/>All files deodexed.</html>");
@@ -182,11 +178,11 @@ public class ScriptDEODEX extends SysUtils {
     
     private void clean(String apk) throws IOException{
         progress.Add(one, "Deleting files...");
-        fileDelete("out"+sep);
-        fileDelete("classes.dex");
-        fileDelete(".."+sep+"buildDEODEX"+sep);
+        fileDelete(CWD+"framweork"+sep+"out"+sep);
+        fileDelete(CWD+"framweork"+sep+"classes.dex");
+        fileDelete(CWD+"buildDEODEX"+sep);
         if(ext.equals("apk")){
-            fileDelete(apk+".odex");
+            fileDelete(CWD+"buildDEODEX"+sep+apk+".odex");
         }
     }
     

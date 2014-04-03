@@ -90,7 +90,7 @@ public class ScriptCLEAR extends SysUtils{
     
     private void work() throws IOException{
         progress.Add(0, "Deleting files...");
-        fileDelete(dir);
+        fileDelete(CWD+dir);
     }
     
     

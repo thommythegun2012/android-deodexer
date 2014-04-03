@@ -12,7 +12,6 @@ import java.awt.Dialog;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Arrays;
-import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingWorker;
@@ -25,7 +24,7 @@ public class ScriptPULL extends SysUtils{
     private ProgressBar progress;
     float one = (1f/(3f))*100f;
     private String from;
-    boolean finished;
+    boolean finished = false;
     
     public ScriptPULL(){
         //error
@@ -38,6 +37,7 @@ public class ScriptPULL extends SysUtils{
         progress.setIconImage(new ImageIcon(getClass().getClassLoader()
                 .getResource("resources/icons/main.png")).getImage());
         progress.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+        progress.setModal(true);
         
         //Set OS dependent commands
         OSCommands();
@@ -65,13 +65,7 @@ public class ScriptPULL extends SysUtils{
                 progress.setIconImage(new ImageIcon(getClass().getClassLoader()
                         .getResource("resources/icons/ok.png")).getImage());
                 finished=true;
-                
-                try{
-                    //Quit
-                    killServer();
-                }catch(Exception e){
-                    System.err.println("Unable to close ADB!");
-                }
+
                 
             }
         };
@@ -84,7 +78,10 @@ public class ScriptPULL extends SysUtils{
             @Override
             public void windowClosing(WindowEvent e) {
                 if(!finished){
+                    echo("Closing window");
                     works.cancel(true);
+                    //Quit
+                    killServer();
                     System.out.println("Cancelled pulling.");
                 }
             }
@@ -105,17 +102,22 @@ public class ScriptPULL extends SysUtils{
     public void Work() throws Exception
     {
         progress.Add(0, "Waiting for device...");
-        execute(".", Arrays.asList(adb, "wait-for-device"));
+        execute("", Arrays.asList(CWD+"resources"+sep+adb, "wait-for-device"));
         progress.Add(one, "Making folder...");
         directoryMake(from);
         progress.Add(one, "Copying files...");
-        execute(".", Arrays.asList(adb,"pull", "/system/" + from + "/", from+sep) );
+        execute("", Arrays.asList(CWD+"resources"+sep+adb,"pull", "/system/" + from + "/", from+sep) );
     }
     
     //To execute inside a worker, because they have a method execute().
-    private void killServer() throws Exception
+    private void killServer()
     {
-        execute(".", Arrays.asList(adb,"kill-server"));
+        try{
+            execute("", Arrays.asList(CWD+"resources"+sep+adb,"kill-server"));   
+        }catch(Exception e){
+            System.err.println("Unable to close ADB!");
+            e.printStackTrace();
+        }
     }
     
     

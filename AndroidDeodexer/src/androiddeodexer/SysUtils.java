@@ -30,22 +30,40 @@ public class SysUtils {
     public String adb;
     protected String sep = File.separator;
     protected ArrayList<String> fileList = new ArrayList<>();
+    public String CWD;
+    
+    public SysUtils(){
+        try{
+            setCWD();
+        }catch(Exception e){
+            System.err.println("Unable to set CWD");
+            e.printStackTrace();
+        }
+        
+    }
+    
+    //Linux doesnt open file on CWD http://stackoverflow.com/a/1127606
+    public void setCWD() throws Exception{
+        CWD = new File(AndroidDeodexer.class.getProtectionDomain()
+                .getCodeSource().getLocation().toURI()).getParentFile()
+                .getCanonicalPath() + sep;
+    }
     
     public int OSCommands(){
         int ret = -1;
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("windows")) {
             //Set Windows commands
-            adb = "resources"+sep+"win.exe";
+            adb = "win.exe";
             ret = 0;
             
         } else if (os.contains("linux") || os.contains("unix")) {
             //Set *NIX commands
-            adb = "resources"+sep+"nix";
+            adb = "nix";
             ret = 1;
         } else {
             // Set Mac OS commands
-            adb = "resources"+sep+"mac";
+            adb = "mac";
             ret = 2;
         }
         return ret;
@@ -59,10 +77,10 @@ public class SysUtils {
     
     //execute("C:\Users\", "rm", "-r");
     protected boolean execute(String working_dir, List<String> args) throws Exception{
-        echo("execute(" + working_dir + ", "+ args + ")");
+        echo("execute(" + CWD+working_dir + ", "+ args + ")");
         boolean ret = true;
         ProcessBuilder pb = new ProcessBuilder(args);
-        pb.directory(new File(working_dir));
+        pb.directory(new File(CWD+working_dir));
         pb.inheritIO();
         final Process shell = pb.start();
         int shellExitStatus = shell.waitFor();
@@ -75,9 +93,9 @@ public class SysUtils {
     
     //fileCopy("original.txt","folder/new.txt");
     protected void fileCopy(String source, String dest) throws IOException {
-        File fin = new File(new File(source).getCanonicalPath());
-        File fout = new File(new File(dest).getCanonicalPath());
-        echo("fileCopy( " + source + ", "+ dest + " )");
+        File fin = new File(new File(CWD+source).getCanonicalPath());
+        File fout = new File(new File(CWD+dest).getCanonicalPath());
+        echo("fileCopy( " + CWD+source + ", "+ CWD+dest + " )");
         Files.copy(fin.toPath(), fout.toPath(), REPLACE_EXISTING, COPY_ATTRIBUTES);
 
     }
@@ -100,34 +118,19 @@ public class SysUtils {
     
     //directoryMake("out");
     public boolean directoryMake(String dir) throws IOException {
-        echo("directoryMake(" + dir + ")");
-        File f = new File(dir+sep);
+        echo("directoryMake(" + CWD+dir+sep + ")");
+        File f = new File(CWD+dir+sep);
         if(!f.mkdirs() && !f.isDirectory()){
             throw new IOException("Unable to make directory.");
         }
         return true;
     }
     
-    //directoryChange("..");
-    //http://stackoverflow.com/a/13981910
-    public void directoryChange(String dir) throws Exception{
-        echo("directoryChange(" + dir + ")");
-        File    directory;       // Desired current working directory
-
-        directory = new File(new File(dir+sep).getCanonicalPath());
-        if (directory.exists() || directory.mkdirs())
-        {
-           System.setProperty("user.dir", directory.getAbsolutePath());
-        }
-
-    }
-    
-    
     public void directoryOpen(String dir) throws Exception{
         echo("Opening " + dir);
         Desktop desktop = Desktop.getDesktop();
         try {
-            desktop.open(new File(dir));
+            desktop.open(new File(CWD+dir));
         } catch (Exception e) {
             System.out.println("Directory not found");
         }
@@ -136,9 +139,9 @@ public class SysUtils {
     //rename("tmp/","perm/");
     protected void rename(String orig_name, String new_name) throws IOException {
         // File (or directory) with old name
-        File file = new File(new File(orig_name).getCanonicalPath());
+        File file = new File(new File(CWD+orig_name).getCanonicalPath());
         // File (or directory) with new name
-        File file2 = new File(new File(new_name).getCanonicalPath());
+        File file2 = new File(new File(CWD+new_name).getCanonicalPath());
         
         echo("rename(" + orig_name + ", " + new_name + ")");
         
@@ -160,6 +163,8 @@ public class SysUtils {
     public void directoryZip( String OUTPUT_ZIP_FILE, String SOURCE_FOLDER, int comp ) throws Exception
     {
         fileList = new ArrayList<>();
+        OUTPUT_ZIP_FILE = CWD+OUTPUT_ZIP_FILE;
+        SOURCE_FOLDER = CWD+SOURCE_FOLDER;
     	System.out.println("directoryZip(" + OUTPUT_ZIP_FILE + ", " + SOURCE_FOLDER + ", " + comp);
         SOURCE_FOLDER = (new File(SOURCE_FOLDER)).getCanonicalPath().toString();
         OUTPUT_ZIP_FILE = (new File(OUTPUT_ZIP_FILE)).getCanonicalPath().toString();
@@ -245,8 +250,8 @@ public class SysUtils {
     //fileUnzip("app.zip", "out/");
     //http://www.mkyong.com/java/how-to-decompress-files-from-a-zip-file/
     public boolean fileUnzip(String zipFile, String outputFolder) throws IOException{
-        String zI = new File(zipFile).getCanonicalPath().toString();
-        String zO = new File(outputFolder+sep).getCanonicalPath().toString();
+        String zI = new File(CWD+zipFile).getCanonicalPath().toString();
+        String zO = new File(CWD+outputFolder+sep).getCanonicalPath().toString();
         
         echo("fileUnzip( " + zI + ", " + zO + " )");
         byte[] buffer = new byte[1024];
@@ -285,13 +290,13 @@ public class SysUtils {
             
     //http://stackoverflow.com/a/13379744
     public void fileCopyFromJar(String fileInside, String fileOutside){
-        echo("copyFromJar "+fileInside + " to "+fileOutside);
+        echo("copyFromJar "+fileInside + " to "+CWD+fileOutside);
         InputStream stream = SysUtils.class.getResourceAsStream(fileInside);
         OutputStream resStreamOut;
         int readBytes;
         byte[] buffer = new byte[4096];
         try {
-            resStreamOut = new FileOutputStream(new File(fileOutside).getCanonicalPath());
+            resStreamOut = new FileOutputStream(new File(CWD+fileOutside).getCanonicalPath());
             while ((readBytes = stream.read(buffer)) > 0) {
                 resStreamOut.write(buffer, 0, readBytes);
             }

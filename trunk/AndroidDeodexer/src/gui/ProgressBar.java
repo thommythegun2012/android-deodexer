@@ -7,6 +7,7 @@
 package gui;
 
 import static java.awt.Dialog.ModalityType.APPLICATION_MODAL;
+import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -20,6 +21,9 @@ public class ProgressBar extends javax.swing.JDialog {
      * Creates new form ProgressBar
      */
     
+    final int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+    final int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+    
     public float progressCounter = 0;
     private JFrame parent;
     
@@ -27,10 +31,10 @@ public class ProgressBar extends javax.swing.JDialog {
         //super(parent, true);
         this.parent = parent;
         initComponents();
-        setBounds(50, 50, getBounds().width, getBounds().height);
+        //setBounds(50, 50, getBounds().width, getBounds().height);
         setVisible(true);
-        setModalityType(APPLICATION_MODAL);
-        setModal(true);
+        setLocation((screenWidth/2)-(getBounds().width/2), 
+                (screenHeight/2)-(getBounds().height/2));
     }
     
     public void Add(float i, String msg){

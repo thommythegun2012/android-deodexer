@@ -1,10 +1,11 @@
 package androiddeodexer;
 
 import gui.Main;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.io.File;
+import java.net.URL;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
+import java.util.Arrays;
 
 /**
  *
@@ -32,7 +33,36 @@ public class AndroidDeodexer {
         
         //Main window
         Main mainFrame = new Main();
+        try{
+            install();
+            
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    private static void install() throws Exception{
+        System.out.println("Verifying necessary files...");
         
+        
+        
+        SysUtils u = new SysUtils();
+        int os = u.OSCommands();
+        if(!new File(u.CWD+"resources"+u.sep+u.adb).exists()){
+            System.out.println("Files missing, unpacking...");
+            u.directoryMake("resources");
+            u.fileCopyFromJar("/resources/"+u.adb, "resources"+u.sep+u.adb );
+            if(os==0){
+                //Windows needs these additional files
+                u.fileCopyFromJar("/resources/AdbWinApi.dll", "resources/AdbWinApi.dll");
+                u.fileCopyFromJar("/resources/AdbWinUsbApi.dll", "resources/AdbWinUsbApi.dll");
+            }
+            else{
+                //Mac and Unix need to change file permissions to Executable
+                u.execute(".", Arrays.asList("chmod","0755", u.CWD + "resources" + u.sep + u.adb));
+            }
+        }
+        System.out.println("Done with nessesary files.");
     }
     
 }

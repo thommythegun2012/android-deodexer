@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package androiddeodexer;
 
 import java.awt.Desktop;
@@ -14,8 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -46,7 +38,7 @@ public class SysUtils {
     public void setCWD() throws Exception{
         CWD = new File(AndroidDeodexer.class.getProtectionDomain()
                 .getCodeSource().getLocation().toURI()).getParentFile()
-                .getCanonicalPath() + sep;
+                .getCanonicalPath()+sep;
     }
     
     public int OSCommands(){
@@ -77,6 +69,7 @@ public class SysUtils {
     
     //execute("C:\Users\", "rm", "-r");
     protected boolean execute(String working_dir, List<String> args) throws Exception{
+        Thread.sleep(1L); //To pull any cancell requests pending
         echo("execute(" + CWD+working_dir + ", "+ args + ")");
         boolean ret = true;
         ProcessBuilder pb = new ProcessBuilder(args);
@@ -96,7 +89,7 @@ public class SysUtils {
         File fin = new File(new File(CWD+source).getCanonicalPath());
         File fout = new File(new File(CWD+dest).getCanonicalPath());
         echo("fileCopy( " + CWD+source + ", "+ CWD+dest + " )");
-        Files.copy(fin.toPath(), fout.toPath(), REPLACE_EXISTING, COPY_ATTRIBUTES);
+        Files.copy(fin.toPath(), fout.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.COPY_ATTRIBUTES);
 
     }
     
@@ -250,10 +243,12 @@ public class SysUtils {
     //fileUnzip("app.zip", "out/");
     //http://www.mkyong.com/java/how-to-decompress-files-from-a-zip-file/
     public boolean fileUnzip(String zipFile, String outputFolder) throws IOException{
+        
+        echo("fileUnzip( " + zipFile + ", " + outputFolder + " )");
+        
         String zI = new File(CWD+zipFile).getCanonicalPath().toString();
         String zO = new File(CWD+outputFolder+sep).getCanonicalPath().toString();
         
-        echo("fileUnzip( " + zI + ", " + zO + " )");
         byte[] buffer = new byte[1024];
         try{
 
@@ -267,18 +262,24 @@ public class SysUtils {
             //get the zipped file list entry
             ZipEntry ze = zis.getNextEntry();
             while(ze!=null){
-                String fileName = ze.getName();
-                File newFile = new File(zO + sep + fileName);
+                String fileName = ze.getName().replace("/", sep);
+                File newFile = new File(zO+sep+fileName);
                 //create all non exists folders
                 //else you will hit FileNotFoundException for compressed folder
-                new File(newFile.getParent()).mkdirs();
-                FileOutputStream fos = new FileOutputStream(newFile); 
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
-                }
+                
+                if(!ze.isDirectory()){
+                    new File(newFile.getParent()).mkdirs();
+                    FileOutputStream fos = new FileOutputStream(newFile); 
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
                 fos.close();   
+                }
+                
+                
                 ze = zis.getNextEntry();
+                
             }
             zis.closeEntry();
             zis.close();

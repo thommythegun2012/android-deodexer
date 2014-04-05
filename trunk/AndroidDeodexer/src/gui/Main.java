@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package gui;
 
 import androiddeodexer.DirectoryRestrictedFileSystemView;
@@ -11,9 +5,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.LinkedHashMap;
 import androiddeodexer.PrintStreamCapturer;
-import androiddeodexer.ScriptDEODEX;
-import androiddeodexer.ScriptPULL;
-import androiddeodexer.ScriptCLEAR;
 import androiddeodexer.SysUtils;
 import java.awt.Component;
 import java.awt.Container;
@@ -38,7 +29,6 @@ public class Main extends JFrame {
     LinkedHashMap<String, String> api_levels = new LinkedHashMap<>();
     int debugWidth, debugHeight;
     SysUtils u = new SysUtils();
-
     final int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
     final int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
     
@@ -64,6 +54,7 @@ public class Main extends JFrame {
         api_levels.put("1", "1.0");
     }
     LinkedHashMap<Integer,String> indexedList = new LinkedHashMap<>();
+    ;
     
     private void api_fill(){
         String[] v = api_levels.keySet().toArray(new String[api_levels.size()]);
@@ -90,9 +81,6 @@ public class Main extends JFrame {
         this.setLocation(screenWidth / 4, screenHeight / 4);
         
         pack();
-        
-        
-        
         setVisible(true);
         
         debugHeight = this.getHeight();
@@ -112,6 +100,10 @@ public class Main extends JFrame {
             }
         });
         
+        
+        /*Window listener for the progressbar, so when the JDialog is closed
+            we kill the server immediately
+        */
         
         
         
@@ -395,6 +387,7 @@ public class Main extends JFrame {
     }//GEN-LAST:event_btn_exitActionPerformed
 
     private void btn_deodex_apkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deodex_apkActionPerformed
+        txt_debug.setText("");
         File dir = new File(u.CWD+"app");
         try{
             System.out.println(dir.getCanonicalPath().toString());
@@ -414,12 +407,12 @@ public class Main extends JFrame {
                 for(int x=0; x<sel.length; x++){
                     files[x] = sel[x].getName().replaceFirst("[.][^.]+$", "");
                 }
-                ScriptDEODEX apk = new ScriptDEODEX(
-                    files, 
-                    indexedList.get(lst_android_version.getSelectedIndex()), 
-                    (int)spn_compression.getValue(),
-                    "apk",
-                    this
+                ProgressBar deodexapk = new ProgressBar(
+                        this,
+                        files, 
+                        indexedList.get(lst_android_version.getSelectedIndex()), 
+                        (int)spn_compression.getValue(),
+                        "apk"
                 );
             }
         }
@@ -429,6 +422,7 @@ public class Main extends JFrame {
     }//GEN-LAST:event_btn_deodex_apkActionPerformed
 
     private void btn_deodex_jarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deodex_jarActionPerformed
+        txt_debug.setText("");
         File dir = new File(u.CWD+"framework");
         if(dir.isDirectory()){
             FileSystemView fsv = new DirectoryRestrictedFileSystemView(dir);
@@ -445,12 +439,12 @@ public class Main extends JFrame {
                 for(int x=0; x<sel.length; x++){
                     files[x] = sel[x].getName().replaceFirst("[.][^.]+$", "");
                 }
-                ScriptDEODEX apk = new ScriptDEODEX(
-                    files, 
-                    indexedList.get(lst_android_version.getSelectedIndex()), 
-                    (int)spn_compression.getValue(),
-                    "jar",
-                    this
+                ProgressBar deodexframework = new ProgressBar(
+                        this,
+                        files, 
+                        indexedList.get(lst_android_version.getSelectedIndex()), 
+                        (int)spn_compression.getValue(),
+                        "jar"
                 );
             }
         }
@@ -462,23 +456,24 @@ public class Main extends JFrame {
     private void btn_pull_frameworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_pull_frameworkActionPerformed
         txt_debug.setText("");
         System.out.println("Pulling framework from phone");
-        ScriptPULL pull = new ScriptPULL("framework", this);
+        ProgressBar pullframework = new ProgressBar("pull_framework");
     }//GEN-LAST:event_btn_pull_frameworkActionPerformed
     
     private void btn_clear_frameworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_clear_frameworkActionPerformed
         txt_debug.setText("");
-        ScriptCLEAR delete = new ScriptCLEAR("framework", this);
+        ProgressBar clearframework = new ProgressBar("clear_framework");
     }//GEN-LAST:event_btn_clear_frameworkActionPerformed
 
     private void btn_pull_apkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_pull_apkActionPerformed
         txt_debug.setText("");
         System.out.println("Pulling apks from phone");
-        ScriptPULL pull = new ScriptPULL("app", this);
+        ProgressBar pullapk = new ProgressBar("pull_apk");
+        
     }//GEN-LAST:event_btn_pull_apkActionPerformed
 
     private void btn_clear_apkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_clear_apkActionPerformed
         txt_debug.setText("");
-        ScriptCLEAR delete = new ScriptCLEAR("app", this);
+        ProgressBar clearapk = new ProgressBar("clear_apk");
     }//GEN-LAST:event_btn_clear_apkActionPerformed
 
     private void btn_debug_clearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_debug_clearActionPerformed

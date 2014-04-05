@@ -1,125 +1,100 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package androiddeodexer;
 
-import gui.ProgressBar;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
+import javax.swing.Timer;
 import javax.swing.SwingWorker;
 
 /**
  *
  * @author Luis Peregrina
  */
-public class ScriptPULL extends SysUtils{
-    private ProgressBar progress;
-    float one = (1f/(3f))*100f;
+public class ScriptPULL extends Script{
     private String from;
+    SwingWorker works;
+    Timer timer;
     boolean finished = false;
+    boolean waiting_for_device = true;
+    int SCRIPT_TIMEOUT_LIMIT = 30;  //Seconds allowed for adb wait-for-device
     
-    public ScriptPULL(){
-        //error
-    }
-    
-    public ScriptPULL(String from, JFrame parent){
+    public ScriptPULL(String from){
         this.from = from;
         //Make window
-        progress = new ProgressBar(parent);
-        progress.setIconImage(new ImageIcon(getClass().getClassLoader()
-                .getResource("resources/icons/main.png")).getImage());
-        progress.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        progress.setModal(true);
         
         //Set OS dependent commands
         OSCommands();
         
+        
+        
+        
         //Start working
-        final SwingWorker works = new SwingWorker<String, Integer>(){
+        works = new SwingWorker<String, Integer>(){
             protected String doInBackground(){
                 try{
                     Work();
                 }catch(Exception e){
-                    progress.setTitle("Done.");
-                    progress.message("<html>There was an error,<br/>check debug info.</html>");
-                    progress.setIconImage(new ImageIcon(getClass().getClassLoader()
-                            .getResource("resources/icons/error.png")).getImage());
+                    sendEvent("error", ""
+                            + "<html>There was an error,<br/>check debug info.</html>");
                     System.err.println(e.getLocalizedMessage());
                     e.printStackTrace();
                 }
                 return null;
             }
             protected void done(){
-                progress.setTitle("Done.");
-                progress.Add(one, "Done pulling files.");
-                progress.toggleOK(true);
-                progress.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                progress.setIconImage(new ImageIcon(getClass().getClassLoader()
-                        .getResource("resources/icons/ok.png")).getImage());
-                finished=true;
-
-                
+                if(finished){
+                    sendEvent("done", "Done pulling files.");
+                }
             }
         };
         works.execute();
         
-        //Cancel if JDialog is closed.
-        progress.addWindowListener(new WindowListener() {
+        //TIMER
+        timer = new Timer(SCRIPT_TIMEOUT_LIMIT*1000, new ActionListener() {
             @Override
-            public void windowOpened(WindowEvent e) {}
-            @Override
-            public void windowClosing(WindowEvent e) {
-                if(!finished){
-                    echo("Closing window");
-                    works.cancel(true);
-                    //Quit
-                    killServer();
-                    System.out.println("Cancelled pulling.");
+            public void actionPerformed(ActionEvent ae) {
+                if(waiting_for_device){
+                    System.out.println("Terminated the script because the time limit was reached.\n"
+                        + "If you are running GNU/Linux try opening the firewall for 'lo' interface\n"
+                        + "like 'sudo iptables -I INPUT -i lo -j ACCEPT' and try again.");
+                    sendEvent("error",
+                            "<html>There was an timeout,<br/>check debug info.</html>");
+                    killServer();   //Kill the server
                 }
+
             }
-            @Override
-            public void windowClosed(WindowEvent e) {}
-            @Override
-            public void windowIconified(WindowEvent e) {}
-            @Override
-            public void windowDeiconified(WindowEvent e) {}
-            @Override
-            public void windowActivated(WindowEvent e) {}
-            @Override
-            public void windowDeactivated(WindowEvent e) {}
         });
+        timer.start();
+        
 
     }
+    
+    
 
     public void Work() throws Exception
     {
-        progress.Add(0, "Waiting for device...");
+        sendEvent("reset", String.valueOf(1f/3f));
+        sendEvent("message", "Waiting for device...");
         execute("", Arrays.asList(CWD+"resources"+sep+adb, "wait-for-device"));
-        progress.Add(one, "Making folder...");
+        waiting_for_device = false;
+        sendEvent("add", "Making folder...");
         directoryMake(from);
-        progress.Add(one, "Copying files...");
+        sendEvent("add", "Copying files...");
         execute("", Arrays.asList(CWD+"resources"+sep+adb,"pull", "/system/" + from + "/", from+sep) );
+        finished=true;
     }
     
     //To execute inside a worker, because they have a method execute().
-    private void killServer()
+    public void killServer()
     {
         try{
-            execute("", Arrays.asList(CWD+"resources"+sep+adb,"kill-server"));   
+            works.cancel(true);
+            execute("", Arrays.asList(CWD+"resources"+sep+adb,"kill-server")); 
+            echo("ADB Daemon closed.");
+            timer.stop();
         }catch(Exception e){
-            System.err.println("Unable to close ADB!");
+            System.err.println("Unable to close ADB, it was probably never started.");
             e.printStackTrace();
         }
     }
-    
-    
-    
 }

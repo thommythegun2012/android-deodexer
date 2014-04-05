@@ -2,9 +2,6 @@ package androiddeodexer;
 
 import gui.Main;
 import java.io.File;
-import java.net.URL;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
 import java.util.Arrays;
 
 /**

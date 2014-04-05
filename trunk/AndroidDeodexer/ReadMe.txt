@@ -31,6 +31,11 @@ ______________________
 Original thread in XDA
 ______________________
    http://forum.xda-developers.com/showthread.php?t=2213235
+
+______________
+Known problems
+______________
+   I personally had a problem while executing adb under Lubuntu, it took like 3 minutes to start, and when it did it failed. Well, it turns out the "lo" (loopback) interface was either down or firewalled. By executing "sudo iptables -I INPUT -i lo -j ACCEPT" and "sudo iptables -I OUTPUT -o lo -j ACCEPT" the adb binary was finally able to run as intended. Check https://code.google.com/p/android/issues/detail?id=3025.
    
 __________________________
 GNU GENERAL PUBLIC LICENSE   
